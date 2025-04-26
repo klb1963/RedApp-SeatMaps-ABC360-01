@@ -1,0 +1,29 @@
+{
+  "name": "com-redapp-seatmapsabc360-01-web-module",
+  "redAppId": "n/a",
+  "bundleSymbolicName": "com.redapp.seatmapsabc360.01",
+  "bundleName": "seatmapsABC360",
+  "contactDetails": {
+    "author": "Leonid Kleimann",
+    "email": "leonid.kleimann@outlook.com",
+    "phoneNumber": "+4915678152428",
+    "company": "SeatMaps",
+    "contactName": "Djois Franklin",
+    "website": "seatmaps.com"
+  },
+  "authorizations": [
+    {
+      "name": "com.sabre.edge.dynamo.cf.service.CommandMessageService",
+      "threshold": "20",
+      "metric": "tpm"
+    }
+  ],
+  "customWorkflows": [
+    {
+      "label": "manifest.json Workflow",
+      "priority": 100,
+      "service": "CustomWorkflowService",
+      "cssClasses": "redapp-web-customworkflow-manifestjson"
+    }
+  ]
+}

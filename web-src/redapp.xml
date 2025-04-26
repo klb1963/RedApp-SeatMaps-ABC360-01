@@ -1,0 +1,12 @@
+<CFBundle>
+	<RedApp id="1234567890123456789012" >
+		
+		<Authorization name="com.sabre.edge.cf.sws.SWS">
+			<Action name="UpdateReservationRQ" threshold="1" />
+		</Authorization>
+
+		<Authorization name="com.sabre.edge.dynamo.cf.service.GetPnr" threshold="1" metric="1"/>
+		
+	</RedApp>
+
+</CFBundle>

@@ -1,0 +1,48 @@
+{
+  "name": "com-redapp-seatmapsabc360-01-web-module-src",
+  "version": "1.0.0",
+  "description": "NGV module",
+  "author": {
+    "name": "Leonid Kleimann"
+  },
+  "contributors": [],
+  "private": true,
+  "license": "LicenseRef-LICENSE",
+  "dependencies": {
+    "sabre-ngv-app": "*",
+    "sabre-ngv-core": "*",
+    "sabre-ngv-airAvailability": "*",
+    "sabre-ngv-modals": "*",
+    "sabre-ngv-redAppSidePanel": "*",
+    "sabre-ngv-custom-forms": "*",
+    "sabre-ngv-pricing": "*",
+    "sabre-ngv-communication": "*",
+    "sabre-ngv-xp": "*",
+    "sabre-ngv-UIComponents": "*"
+  },
+  "devDependencies": {},
+  "optionalDependencies": {},
+  "ngv": {
+    "buildDependencies": {
+      "sabre-ngv-app": "*",
+      "sabre-ngv-core": "*",
+      "sabre-ngv-airAvailability": "*",
+      "sabre-ngv-modals": "*",
+      "sabre-ngv-redAppSidePanel": "*",
+      "sabre-ngv-custom-forms": "*",
+      "sabre-ngv-pricing": "*",
+      "sabre-ngv-communication": "*",
+      "sabre-ngv-xp": "*",
+      "sabre-ngv-UIComponents": "*"
+    },
+    "concierge_version_min": "7.5.18",
+    "runtimeDependencies": {},
+    "testDependencies": {},
+    "buildInfo": {
+      "concierge_version": "7.5.18",
+      "date": "2025-04-23T12:30:41.194Z",
+      "ts": 1745411441194,
+      "rebuildHash": "7x5x1813a949955113a2c48eccb57a0f43bd3546f2040e4"
+    }
+  }
+}

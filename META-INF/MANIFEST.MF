@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: redapp_seatmaps_abc360-01
+Bundle-SymbolicName: redapp_seatmaps_abc360-01;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: redapp_seatmaps_abc360_01.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ com.sabre.edge.dynamo.ui
+Automatic-Module-Name: redapp.seatmaps.abc60
+Bundle-ActivationPolicy: lazy
