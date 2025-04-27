@@ -2,11 +2,19 @@
 
 import { Option } from 'sabre-ngv-UIComponents/advancedDropdown/interfaces/Option';
 
+// ==== Типы данных, которые мы парсим ====
+
+/**
+ * Описание пассажира (для выпадающего списка выбора пассажиров)
+ */
 export interface PassengerOption extends Option<string> {
     givenName: string;
     surname: string;
 }
 
+/**
+ * Описание авиасегмента (для выпадающего списка выбора сегмента)
+ */
 export interface SegmentOption extends Option<string> {
     origin: string;
     destination: string;
@@ -17,16 +25,28 @@ export interface SegmentOption extends Option<string> {
     equipment: string;
 }
 
+/**
+ * Структура возвращаемых данных после парсинга PNR
+ */
 export interface PnrData {
     passengers: PassengerOption[];
     segments: SegmentOption[];
 }
 
+// ==== Основная функция парсинга XML-ответа ====
+
+/**
+ * Парсит XML-документ с данными бронирования (PNR).
+ * Извлекает пассажиров и авиасегменты для дальнейшего отображения.
+ * 
+ * @param xmlDoc - XMLDocument, полученный из ответа Sabre
+ * @returns Структурированные данные по пассажирам и сегментам
+ */
 export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
     const passengers: PassengerOption[] = [];
     const segments: SegmentOption[] = [];
 
-    // --- Пассажиры ---
+    // --- Парсинг пассажиров ---
     const passengerNodes = xmlDoc.getElementsByTagName('stl19:Passenger');
     for (let i = 0; i < passengerNodes.length; i++) {
         const passenger = passengerNodes[i];
@@ -35,14 +55,14 @@ export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
         const givenName = passenger.getElementsByTagName('stl19:FirstName')[0]?.textContent?.trim() || '';
 
         passengers.push({
-            label: `${surname}/${givenName}`,
+            label: `${surname}/${givenName}`, // Пример: "IVANOV/IVAN"
             value: id,
             givenName,
             surname
         });
     }
 
-    // --- Сегменты ---
+    // --- Парсинг авиасегментов ---
     const airSegmentNodes = xmlDoc.getElementsByTagName('stl19:Air');
     for (let i = 0; i < airSegmentNodes.length; i++) {
         const segment = airSegmentNodes[i];
@@ -52,19 +72,18 @@ export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
         const destination = segment.getElementsByTagName('stl19:ArrivalAirport')[0]?.textContent?.trim() || '';
         const departureDateTime = segment.getElementsByTagName('stl19:DepartureDateTime')[0]?.textContent?.trim() || '';
         const marketingFlightNumber = segment.getElementsByTagName('stl19:MarketingFlightNumber')[0]?.textContent?.trim() || '';
+        const marketingCarrier = segment.getElementsByTagName('stl19:MarketingAirlineCode')[0]?.textContent?.trim() || 'UNKNOWN'; // Код авиакомпании
+        const bookingClass = segment.getElementsByTagName('stl19:OperatingClassOfService')[0]?.textContent?.trim() || ''; // Класс бронирования (например, Y, C)
+        const equipment = segment.getElementsByTagName('stl19:EquipmentType')[0]?.textContent?.trim() || ''; // Тип самолета (например, 388)
 
-        const marketingCarrier = segment.getElementsByTagName('stl19:MarketingAirlineCode')[0]?.textContent?.trim() || 'UNKNOWN'; // Carrier
-        const bookingClass = segment.getElementsByTagName('stl19:OperatingClassOfService')[0]?.textContent?.trim() || ''; // Class
-        const equipment = segment.getElementsByTagName('stl19:EquipmentType')[0]?.textContent?.trim() || ''; // Equipment
-
-        // Корректно извлекаем только дату
+        // Отделяем дату от полной даты-времени
         let departureDate = '';
         if (departureDateTime.includes('T')) {
-            departureDate = departureDateTime.split('T')[0];
+            departureDate = departureDateTime.split('T')[0]; // Берем только часть до "T"
         }
 
         segments.push({
-            label: `${marketingCarrier}${marketingFlightNumber} — ${origin} → ${destination}`,
+            label: `${marketingCarrier}${marketingFlightNumber} — ${origin} → ${destination}`, // Пример: "LH410 — MUC → JFK"
             value: id,
             origin,
             destination,
@@ -76,5 +95,6 @@ export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
         });
     }
 
+    // --- Возвращаем собранные пассажиров и сегменты ---
     return { passengers, segments };
 };

@@ -44,7 +44,7 @@ export const XmlViewer: React.FC<XmlViewerProps> = ({ xml }) => {
 
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'GetReservationRS.xml';
+        a.download = 'soap-responce.xml';
         a.click();
 
         URL.revokeObjectURL(url);

@@ -26,7 +26,6 @@ import { quicketConfig } from '../utils/quicketConfig';
 import { parseSeatMapResponse } from '../utils/parseSeatMapResponse';
 import { mapCabinToCode } from '../utils/mapCabinToCode';
 
-import SeatMapComponentPnr from '../components/SeatMapComponentPnr';
 import SeatMapComponentBase from './SeatMapComponentBase';
 
 //====================
@@ -106,13 +105,7 @@ export class SeatMapsPopover extends React.Component<Record<string, unknown>, Se
     // ============================
 
     private loadSeatMap = async ({ availabilityInfo, silent = false }: { availabilityInfo: boolean; silent?: boolean }): Promise<void> => {
-        const {
-            selectedPassengers,
-            selectedSegment,
-            selectedCabinClass,
-            segments,
-            passengers
-        } = this.state;
+        const { selectedPassengers, selectedSegment, selectedCabinClass, segments, passengers } = this.state;
     
         const selectedSegmentData = segments.find(seg => seg.value === selectedSegment);
         if (!selectedSegmentData) {
@@ -135,7 +128,18 @@ export class SeatMapsPopover extends React.Component<Record<string, unknown>, Se
             cabin: selectedCabinClass as any
         };
     
-        // 🧠 Здесь важно: если availabilityInfo == false, пассажиров передаем пусто
+        const flight = {
+            id: flightSegment.id,
+            airlineCode: flightSegment.marketingCarrier,
+            flightNo: flightSegment.marketingFlightNumber,
+            departureDate: flightSegment.departureDate,
+            departure: flightSegment.origin,
+            arrival: flightSegment.destination,
+            cabinClass: mapCabinToCode(flightSegment.cabin),
+            equipment: flightSegment.equipment || 'Unknown',
+            marketingCarrier: flightSegment.marketingCarrier
+        };
+    
         const mappedPassengers = (!availabilityInfo || selectedPassengers.length === 0)
             ? []
             : passengers
@@ -147,18 +151,17 @@ export class SeatMapsPopover extends React.Component<Record<string, unknown>, Se
                     surname: p.surname
                 }));
     
-        // ✅ Показ пустой карты без загрузки
         if (!availabilityInfo) {
-            const fallbackLayout = {
+            const emptyLayout = {
                 decks: [
                     {
                         id: 'main-deck',
-                        name: 'Deck 1',
-                        width: 600,
-                        height: 400,
+                        name: 'Main Deck',
+                        width: 800,
+                        height: 600,
                         rows: [
-                            { label: '1', seats: [{ label: 'A', x: 50, y: 50 }, { label: 'B', x: 100, y: 50 }] },
-                            { label: '2', seats: [{ label: 'A', x: 50, y: 100 }] }
+                            { label: '1', seats: [{ label: 'A', x: 50, y: 50 }, { label: 'B', x: 150, y: 50 }, { label: 'C', x: 250, y: 50 }] },
+                            { label: '2', seats: [{ label: 'A', x: 50, y: 150 }, { label: 'B', x: 150, y: 150 }, { label: 'C', x: 250, y: 150 }] }
                         ]
                     }
                 ]
@@ -167,29 +170,14 @@ export class SeatMapsPopover extends React.Component<Record<string, unknown>, Se
             getService(PublicModalsService).showReactModal({
                 header: '✈️ Empty Seat Map',
                 component: React.createElement(SeatMapComponentBase, {
+                    flightSegments: [flight],
                     config: quicketConfig,
-                    flightSegments: [{ 
-                        id: flightSegment.id,
-                        airlineCode: flightSegment.marketingCarrier,
-                        flightNo: flightSegment.marketingFlightNumber,
-                        departureDate: flightSegment.departureDate,
-                        departure: flightSegment.origin,
-                        arrival: flightSegment.destination,
-                        cabinClass: mapCabinToCode(flightSegment.cabin),
-                        equipment: flightSegment.equipment || 'Unknown'
-                    }],
-                    layoutData: fallbackLayout,
+                    layoutData: emptyLayout,
                     availability: [],
                     passengers: [],
                     generateFlightData: (segment: any, index: number, cabinClass?: string) => ({
-                        id: segment.id,
-                        airlineCode: segment.airlineCode,
-                        flightNo: segment.flightNo,
-                        departureDate: segment.departureDate,
-                        departure: segment.departure,
-                        arrival: segment.arrival,
-                        cabinClass: (cabinClass || 'A') as 'F' | 'C' | 'S' | 'Y' | 'A',
-                        equipment: segment.equipment || 'Unknown'
+                        ...segment,
+                        cabinClass: cabinClass || 'A'
                     }),
                     initialSegmentIndex: 0,
                     showCabinClassSelector: false,
@@ -201,39 +189,22 @@ export class SeatMapsPopover extends React.Component<Record<string, unknown>, Se
             return;
         }
     
-        // 🧠 Реальная карта через loadSeatMapFromSabre
-        await loadSeatMapFromSabre(flightSegment, mappedPassengers, (responseXml) => {
-            const { layout, availability } = parseSeatMapResponse(responseXml);
-    
-            const flight = {
-                id: flightSegment.id,
-                airlineCode: flightSegment.marketingCarrier,
-                flightNo: flightSegment.marketingFlightNumber,
-                departureDate: flightSegment.departureDate,
-                departure: flightSegment.origin,
-                arrival: flightSegment.destination,
-                cabinClass: mapCabinToCode(flightSegment.cabin),
-                equipment: flightSegment.equipment || 'Unknown'
-            };
+        await loadSeatMapFromSabre(flightSegment, mappedPassengers, async (parsed, rawXml) => {
+            const xmlDoc = new DOMParser().parseFromString(rawXml, 'application/xml');
+            const { layout, availability } = parseSeatMapResponse(xmlDoc);
     
             if (!silent) {
                 getService(PublicModalsService).showReactModal({
                     header: '👥 Occupied Seat Map',
                     component: React.createElement(SeatMapComponentBase, {
-                        config: quicketConfig,
                         flightSegments: [flight],
+                        config: quicketConfig,
                         layoutData: layout,
                         availability: availability,
                         passengers: mappedPassengers,
                         generateFlightData: (segment: any, index: number, cabinClass?: string) => ({
-                            id: segment.id,
-                            airlineCode: segment.airlineCode,
-                            flightNo: segment.flightNo,
-                            departureDate: segment.departureDate,
-                            departure: segment.departure,
-                            arrival: segment.arrival,
-                            cabinClass: (cabinClass || 'A') as 'F' | 'C' | 'S' | 'Y' | 'A',
-                            equipment: segment.equipment || 'Unknown'
+                            ...segment,
+                            cabinClass: cabinClass || 'A'
                         }),
                         initialSegmentIndex: 0,
                         showCabinClassSelector: false,
