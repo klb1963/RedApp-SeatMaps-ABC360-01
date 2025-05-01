@@ -113,13 +113,37 @@ export class Main extends Module {
 
     // открываем модальное окно/поповер с SeatMap
     openSeatMaps(): void {
-        const publicModalsService = getService(PublicModalsService);
-        publicModalsService.showReactModal({
-            header: 'Select Passengers and Segment',
-            component: React.createElement(SeatMapsPopover),
+      const publicModalsService = getService(PublicModalsService);
+    
+      (async () => {
+        try {
+          const { parsedData: pnrData } = await loadPnrDetailsFromSabre();
+    
+          if (!pnrData || pnrData.segments.length === 0) {
+            publicModalsService.showReactModal({
+              header: 'SeatMaps',
+              component: React.createElement('div', { style: { padding: '1rem' } }, 'No active PNR with flight segments.'),
+              modalClassName: 'seatmap-modal-class'
+            });
+            return;
+          }
+    
+          publicModalsService.showReactModal({
+            header: 'SeatMaps',
+            component: React.createElement(require('./components/SeatMapsPopover').SeatMapsPopover),
             modalClassName: 'seatmap-modal-class'
-        });
+          });
+        } catch (error) {
+          console.error('❌ Failed to load PNR for seat maps:', error);
+          publicModalsService.showReactModal({
+            header: 'SeatMaps Error',
+            component: React.createElement('div', { style: { padding: '1rem', color: 'red' } }, 'Failed to load PNR data.'),
+            modalClassName: 'seatmap-modal-class'
+          });
+        }
+      })();
     }
+
     //============= getEnhancedSeatMapRQ ==========
     private getEnhancedSeatMapRQ(): void {
       const publicModalsService = getService(PublicModalsService);
@@ -131,11 +155,14 @@ export class Main extends Module {
       });
     }
 
-    // =========== showPnrInfo ==================
-    showPnrInfo(): void {
-      const publicModalsService = getService(PublicModalsService);
+  // =========== showPnrInfo ==================
+  showPnrInfo(): void {
+    const publicModalsService = getService(PublicModalsService);
 
-      loadPnrDetailsFromSabre((pnrData, rawXml) => {
+    (async () => {
+      try {
+        const { parsedData: pnrData, rawXml } = await loadPnrDetailsFromSabre();
+
         const isEmpty = !pnrData ||
           (!pnrData.passengers || pnrData.passengers.length === 0) &&
           (!pnrData.segments || pnrData.segments.length === 0);
@@ -149,30 +176,38 @@ export class Main extends Module {
           component: content,
           modalClassName: 'seatmap-modal-class'
         });
-      });
-    }
+      } catch (error) {
+        console.error('❌ Failed to load PNR data:', error);
+        publicModalsService.showReactModal({
+          header: 'PNR Error',
+          component: React.createElement('div', { style: { padding: '1rem', color: 'red' } }, 'Failed to load PNR data.'),
+          modalClassName: 'seatmap-modal-class'
+        });
+      }
+    })();
+  }
 
-    //============== Widgets ====================
+  //============== Widgets ====================
 
-    // AvailabilityTile
-    private registerSeatMapAvailTile(): void {
-        const airAvailabilityService = getService(PublicAirAvailabilityService);
-      
-        const showSeatMapAvailabilityModal = (data: any) => {
+  // AvailabilityTile
+  private registerSeatMapAvailTile(): void {
+    const airAvailabilityService = getService(PublicAirAvailabilityService);
 
-          // console.log('📥 [Availability] Received Data:', JSON.stringify(data, null, 2));
-      
-          const modalOptions: ReactModalOptions = {
-            header: 'SeatMaps ABC 360',
-            component: React.createElement(SeatMapComponentAvail, {
-              config: quicketConfig,
-              data: data
-            }),
-            modalClassName: 'react-tile-modal-class'
-          };
-      
-          getService(PublicModalsService).showReactModal(modalOptions);
-        };
+    const showSeatMapAvailabilityModal = (data: any) => {
+
+      // console.log('📥 [Availability] Received Data:', JSON.stringify(data, null, 2));
+
+      const modalOptions: ReactModalOptions = {
+        header: 'SeatMaps ABC 360',
+        component: React.createElement(SeatMapComponentAvail, {
+          config: quicketConfig,
+          data: data
+        }),
+        modalClassName: 'react-tile-modal-class'
+      };
+
+      getService(PublicModalsService).showReactModal(modalOptions);
+    };
       
         airAvailabilityService.createAirAvailabilitySearchTile(
           SeatMapAvailTile,

@@ -10,11 +10,11 @@ interface SeatMapComponentBaseProps {
   showCabinClassSelector?: boolean;
   defaultCabinClass?: 'F' | 'C' | 'S' | 'Y' | 'A';
   generateFlightData: (segment: any, segmentIndex: number, cabinClass?: string) => any;
-  layoutData?: any; // может и не быть
+  layoutData?: any;
   availability?: any[];
   passengers?: any[];
   showSegmentSelector?: boolean;
-  assignedSeats?: { passengerId: string; seat: string }[];  // пассажиры и их места, если они уже есть
+  assignedSeats?: { passengerId: string; seat: string }[];
 }
 
 const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
@@ -24,73 +24,88 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   showCabinClassSelector = false,
   defaultCabinClass = 'A',
   generateFlightData,
-  // layoutData,
   availability = [],
   passengers = [],
   showSegmentSelector = true,
   assignedSeats
 }) => {
-  const [segmentIndex, setSegmentIndex] = useState(initialSegmentIndex);
+  console.count('🔁 Render SeatMapComponentBase');
 
-  const [cabinClass, setCabinClass] = useState<'F' | 'C' | 'S' | 'Y' | 'A'>('A'); // или другой дефолт, если showCabinClassSelector
-  
-  const [selectedSeat, setSelectedSeat] = useState<any>(null); // <-- ЭТО ДОБАВИТЬ
+  const [segmentIndex, setSegmentIndex] = useState(initialSegmentIndex);
+  const [cabinClass, setCabinClass] = useState<'F' | 'C' | 'S' | 'Y' | 'A'>(defaultCabinClass);
+  const [selectedSeat, setSelectedSeat] = useState<any>(null);
+  const [flight, setFlight] = useState<any>(null);
+
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  const currentSegment = flightSegments[segmentIndex] || {};
+  const currentSegment = flightSegments[segmentIndex];
 
-  console.log('📦 flightSegment перед вызовом generateFlightData:', currentSegment);
+  // 🔍 Логи для отладки
+  useEffect(() => {
+    console.log('📡 [SeatMapComponentBase] 🔄 Обновлены flightSegments:', flightSegments);
+  }, [flightSegments]);
 
-  const flight = generateFlightData(currentSegment, segmentIndex);
+  useEffect(() => {
+    console.log('🎯 [SeatMapComponentBase] Выбранный segmentIndex:', segmentIndex);
+  }, [segmentIndex]);
 
-  const sendToIframe = () => {
+  // 🎯 Генерация flight при изменении сегмента или класса
+  useEffect(() => {
+    if (!currentSegment || !currentSegment.marketingAirline || !currentSegment.flightNumber) {
+      console.warn('⛔ [SeatMapComponentBase] Невозможно сгенерировать flight: сегмент некорректен.', currentSegment);
+      setFlight(null);
+      return;
+    }
+
+    const generatedFlight = generateFlightData(currentSegment, segmentIndex);
+    console.log('✅ [SeatMapComponentBase] Сформирован flight:', generatedFlight);
+    setFlight(generatedFlight);
+  }, [currentSegment, segmentIndex, cabinClass]);
+
+  // 🚀 Отправка сообщения в iframe при готовности данных
+  useEffect(() => {
+    if (!flight || flight.flightNo === '000' || flight.airlineCode === 'XX') {
+      console.warn('[⏳ SeatMaps] Пропущена отправка: flight ещё не готов или некорректен.', flight);
+      return;
+    }
+
     const iframe = iframeRef.current;
     if (!iframe?.contentWindow) return;
-  
+
     const message: any = {
       type: 'seatMaps',
       config: JSON.stringify(config),
       flight: JSON.stringify(flight)
     };
-  
+
     if (availability.length > 0) {
       message.availability = JSON.stringify(availability);
     }
-  
+
     if (passengers.length > 0) {
       message.passengers = JSON.stringify(passengers);
     }
-  
+
     if (assignedSeats && assignedSeats.length > 0) {
       message.assignedSeats = JSON.stringify(assignedSeats);
     }
-  
+
+    console.log('[📤 SeatMaps] Sending flight to iframe:', flight);
     iframe.contentWindow.postMessage(message, '*');
-  };
+  }, [flight]);
 
-  // 🚀 Отправляем данные в iframe при изменении сегмента или класса
+  // Слушатель iframe
   useEffect(() => {
-    sendToIframe();
-  }, [segmentIndex, cabinClass]);
-
-  // 🛰️ Слушаем сообщения от iframe
-  useEffect(() => {
-     // ================ подключение слушателя ================
-     const appMessageListener = event => {
-      const { type, ...rest } = event.data;
-      // console.log(`Recieved!!!:`, event.data);
-
-      if (type == 'seatMaps') {
-        // console.log(`message from react lib:`, event.data);
+    const appMessageListener = (event: MessageEvent) => {
+      const { type } = event.data;
+      if (type === 'seatMaps') {
+        // обработка ответа
       }
     };
-
     window.addEventListener('message', appMessageListener);
-
-    // =======================================================
+    return () => window.removeEventListener('message', appMessageListener);
   }, []);
 
-  // Можно вывести выбранное место прямо на экран (для теста)
   useEffect(() => {
     if (selectedSeat) {
       console.log('✅ Выбранное место готово для бронирования:', selectedSeat);
@@ -118,7 +133,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
           </select>
         </div>
       )}
-  
+
       {showCabinClassSelector && (
         <div style={{ marginBottom: '1rem' }}>
           <label htmlFor="cabinClassSelect">Выберите класс (кабину): </label>
@@ -135,12 +150,12 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
           </select>
         </div>
       )}
-  
+
       <div style={{ marginBottom: '1rem', fontSize: '0.9rem', color: '#333' }}>
         <strong>🛫 Flight info:</strong>
         <pre>{JSON.stringify(flight, null, 2)}</pre>
       </div>
-  
+
       <iframe
         ref={iframeRef}
         src="https://quicket.io/react-proxy-app/"
@@ -148,11 +163,9 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
         height="800"
         style={{ border: '1px solid #ccc' }}
         title="SeatMapIframe"
-        onLoad={sendToIframe}
       />
     </div>
   );
-
 };
 
 export default SeatMapComponentBase;
