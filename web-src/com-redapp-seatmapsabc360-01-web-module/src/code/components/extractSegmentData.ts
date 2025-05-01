@@ -1,3 +1,5 @@
+// file: extractSegmentData.ts
+
 import { FlightSegment } from 'sabre-ngv-app/app/common/data/flight/FlightSegment';
 
 export function extractSegmentData(segment: FlightSegment): Record<string, any> {

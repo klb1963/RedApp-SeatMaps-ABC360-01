@@ -18,10 +18,12 @@ export class SeatMapShoppingView extends AbstractView<AbstractModel> {
     private selectedSegmentIndex: number = 0;
 
     selfDrawerContextModelPropagated(cpa: FlightSegment): void {
+
         console.log('📌 [SeatMapShoppingView] selfDrawerContextModelPropagated called with cpa:', cpa);
 
         this.currentSegment = cpa;
         this.updateFlightSegmentsFromSegment(cpa);
+        console.log("tryRenderReactComponent_before");
         this.tryRenderReactComponent();
     }
 
@@ -62,6 +64,9 @@ export class SeatMapShoppingView extends AbstractView<AbstractModel> {
     }
 
     tryRenderReactComponent(attempts = 0) {
+
+        console.log("tryRenderReactComponent");
+
         const MAX_ATTEMPTS = 10;
         const INTERVAL = 500;
         const rootElement = document.getElementById('seatmap-root');
@@ -78,6 +83,9 @@ export class SeatMapShoppingView extends AbstractView<AbstractModel> {
     }
 
     renderReactComponent() {
+
+        console.log("renderReactComponent");
+
         if (!this.currentSegment) {
             console.warn('⚠️ Нет сохранённого сегмента. React компонент не будет отрендерен.');
             return;

@@ -2,11 +2,11 @@
 
 import * as React from 'react';
 import SeatMapComponentBase from './SeatMapComponentBase';
+import { generateFlightData } from '../utils/generateFlightData';
 
 interface SeatMapComponentPnrProps {
   config: any;
   flight: any;
-  layout: any;
   availability?: any[];
   passengers?: any[];
   showSegmentSelector?: boolean;
@@ -15,26 +15,24 @@ interface SeatMapComponentPnrProps {
 const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
   config,
   flight,
-  layout,
   availability = [],
   passengers = [],
   showSegmentSelector = true 
 }) => {
-  const flightSegments = [flight];
+  const flightSegments = [
+    {
+      ...flight,
+      cabinClass: flight.cabinClass || 'Y' // подстраховка
+    }
+  ];
 
   return (
     <SeatMapComponentBase
       config={config}
       flightSegments={flightSegments}
       initialSegmentIndex={0}
-      showCabinClassSelector={false}
       showSegmentSelector={showSegmentSelector}
-      defaultCabinClass={flight.cabinClass || 'Y'}
-      generateFlightData={(segment) => ({
-        ...segment,
-        cabinClass: segment.cabinClass || 'Y' // чтобы точно был cabinClass
-      })}
-      layoutData={layout}
+      generateFlightData={generateFlightData}
       availability={availability}
       passengers={passengers}
     />

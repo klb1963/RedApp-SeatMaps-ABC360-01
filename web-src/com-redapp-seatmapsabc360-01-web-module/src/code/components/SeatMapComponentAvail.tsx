@@ -1,5 +1,7 @@
 // file: SeatMapComponentAvail.tsx
 
+// file: SeatMapComponentAvail.tsx
+
 import * as React from 'react';
 import SeatMapComponentBase from './SeatMapComponentBase';
 import { getFlightFromSabreData } from './getFlightFromSabreData';
@@ -12,35 +14,38 @@ interface SeatMapComponentAvailProps {
 const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, data }) => {
   const flightSegments = data.flightSegments || [];
 
-  const layout = {
-    decks: [
-      {
-        id: 'main-deck',
-        name: 'Deck 1',
-        width: 600,
-        height: 400,
-        rows: [
-          { label: '1', seats: [{ label: 'A', x: 50, y: 50 }, { label: 'B', x: 100, y: 50 }] },
-          { label: '2', seats: [{ label: 'A', x: 50, y: 100 }] }
-        ]
-      }
-    ]
-  };
+  // 🔧 Исправлено: удалили 'W', потому что она не поддерживается
+  const [cabinClass, setCabinClass] = React.useState<'F' | 'C' | 'S' | 'Y' | 'A'>('Y');
+
+  console.log('📦 [SeatMapComponentAvail] Данные получены:', data);
+  console.log('🧩 [SeatMapComponentAvail] Выбранный класс:', cabinClass);
 
   return (
-    <SeatMapComponentBase
-      config={config}
-      flightSegments={flightSegments}
-      showCabinClassSelector={true}
-      defaultCabinClass="A"
-      generateFlightData={(_, index, cabinClass) => {
-        const flight = getFlightFromSabreData(data, index);
-        return { ...flight, cabinClass }; // добавляем выбранный класс
-      }}
-      layoutData={layout}
-      availability={[]} // availability подставится внутри getFlightFromSabreData, либо можно мок включить вручную
-      passengers={[]}
-    />
+    <div style={{ padding: '1rem' }}>
+      <label style={{ marginRight: '8px' }}>Выберите класс обслуживания:</label>
+      <select
+        value={cabinClass}
+        onChange={(e) => setCabinClass(e.target.value as 'F' | 'C' | 'S' | 'Y' | 'A')}
+      >
+        <option value="Y">Economy (Y)</option>
+        <option value="S">Premium Economy (S)</option>
+        <option value="C">Business (C)</option>
+        <option value="F">First (F)</option>
+        <option value="A">All cabins (A)</option>
+      </select>
+
+      <SeatMapComponentBase
+        config={config}
+        flightSegments={flightSegments}
+        showCabinClassSelector={false}
+        defaultCabinClass={cabinClass}
+        generateFlightData={(segment, index) =>
+          getFlightFromSabreData({ flightSegments: [segment] }, 0, cabinClass)
+        }
+        availability={[]}
+        passengers={[]}
+      />
+    </div>
   );
 };
 

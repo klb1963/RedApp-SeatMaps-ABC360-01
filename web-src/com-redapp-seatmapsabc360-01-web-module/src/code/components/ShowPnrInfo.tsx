@@ -15,7 +15,10 @@ export const ShowPnrInfo: React.FC<ShowPnrInfoProps> = ({ pnrData, rawXml }) => 
             <ul>
                 {pnrData.passengers.map((passenger: any, index: number) => (
                     <li key={index}>
-                        {passenger.surname}/{passenger.givenName}
+                        {passenger.surname}/{passenger.givenName} —{' '}
+                        {passenger.seatAssignment
+                            ? `🟢 Место: ${passenger.seatAssignment}`
+                            : '🔴 Без места'}
                     </li>
                 ))}
             </ul>

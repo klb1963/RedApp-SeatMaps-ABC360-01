@@ -22,6 +22,9 @@ export class SeatMapShoppingTile extends Tile<FlightSegment> implements WithoutF
     private sharedModel: any = null;
 
     selfDrawerContextModelPropagated(cpa: FlightSegment): void {
+
+        console.log("selfDrawerContextModelPropagated");
+
         try {
             this.currentSegment = cpa;
             const segment = cpa;
@@ -66,14 +69,18 @@ export class SeatMapShoppingTile extends Tile<FlightSegment> implements WithoutF
                 </div>
             `;
 
+            console.log("setDataContent_before");
+
             this.setDataContent(tileHtml);
 
+            console.log("setDataContent_after");
+
             // Обработчик клика
-            this.$el.off('click', '.abc-seatmap-button');
-            this.$el.on('click', '.abc-seatmap-button', () => {
-                console.log('🔁 Клик по кнопке — повторно инициируем View');
-                this.trigger('selfDrawerContextModelPropagated', this.model); // ✅ нативно
-            });
+            // this.$el.off('click', '.abc-seatmap-button');
+            // this.$el.on('click', '.abc-seatmap-button', () => {
+            //     console.log('🔁 Клик по кнопке — повторно инициируем View');
+            //     this.trigger('selfDrawerContextModelPropagated', this.model); // ✅ нативно
+            // });
 
         } catch (error) {
             console.error('❌ Ошибка в selfDrawerContextModelPropagated:', error);

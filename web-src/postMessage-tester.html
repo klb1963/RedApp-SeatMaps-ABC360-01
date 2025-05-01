@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SeatMap Combined Payload Test</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; background: #f4f4f4; }
+    pre { background: #eee; padding: 1rem; border-radius: 5px; max-height: 200px; overflow: auto; }
+    iframe { width: 100%; height: 800px; border: 1px solid #ccc; margin-top: 2rem; }
+  </style>
+</head>
+<body>
+
+<h1>🚀 SeatMap Test</h1>
+<pre id="sentData"></pre>
+<iframe id="seatmapFrame" src="https://quicket.io/react-proxy-app/" title="SeatMap"></iframe>
+
+<script>
+  const iframe = document.getElementById('seatmapFrame');
+
+    const message = {
+      type: "seatMaps",
+      config: {
+        width: 400,
+        lang: "EN",
+        builtInTooltip: true,
+        visibleFuselage: true
+      },
+      flight: {
+        id: "111",
+        airlineCode: "EK",
+        flightNo: "50",
+        departureDate: "2025-05-21",
+        departure: "MUC",
+        arrival: "DXB",
+        cabinClass: "C"
+      }
+    };
+
+    // И затем:
+    iframe.contentWindow.postMessage(
+      { type: "seatMaps", ...message },
+      "*"
+    );
+
+  window.addEventListener("message", (event) => {
+    console.log("📨 received message from iframe:", event.data);
+  });
+</script>
+
+</body>
+</html>

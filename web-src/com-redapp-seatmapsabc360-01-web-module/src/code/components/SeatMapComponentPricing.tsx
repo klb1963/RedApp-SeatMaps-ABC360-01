@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import SeatMapComponentBase from './SeatMapComponentBase';
+import { generateFlightData } from '../utils/generateFlightData';
 
 interface SeatMapComponentPricingProps {
   config: any;
@@ -14,41 +15,14 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
   flightSegments,
   selectedSegmentIndex
 }) => {
-  const layout = {
-    decks: [
-      {
-        id: 'main-deck',
-        name: 'Deck 1',
-        width: 600,
-        height: 400,
-        rows: [
-          { label: '1', seats: [{ label: 'A', x: 50, y: 50 }, { label: 'B', x: 100, y: 50 }] },
-          { label: '2', seats: [{ label: 'A', x: 50, y: 100 }] }
-        ]
-      }
-    ]
-  };
-
   return (
     <SeatMapComponentBase
       config={config}
       flightSegments={flightSegments}
       initialSegmentIndex={selectedSegmentIndex}
       showCabinClassSelector={false}
-      generateFlightData={(segment) => ({
-        id: '001',
-        airlineCode: segment.marketingAirline || 'XX',
-        flightNo: segment.flightNumber || '000',
-        departureDate: segment.departureDateTime?.split('T')[0] || '',
-        departure: segment.origin || '???',
-        arrival: segment.destination || '???',
-        cabinClass: segment.cabinClass || '',
-        equipment: segment.equipment || ''
-      })}
-      layoutData={layout}
-      passengers={[
-        { id: 'PAX1', name: 'Иванов И.И.', type: 'ADT' }
-      ]}
+      generateFlightData={generateFlightData}
+      passengers={[]}
     />
   );
 };

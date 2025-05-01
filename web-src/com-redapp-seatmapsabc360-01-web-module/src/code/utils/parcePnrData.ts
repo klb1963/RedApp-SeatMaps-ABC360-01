@@ -10,6 +10,7 @@ import { Option } from 'sabre-ngv-UIComponents/advancedDropdown/interfaces/Optio
 export interface PassengerOption extends Option<string> {
     givenName: string;
     surname: string;
+    seatAssignment?: string; // номер места (если есть)
 }
 
 /**
@@ -53,12 +54,20 @@ export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
         const id = passenger.getAttribute('id') || '';
         const surname = passenger.getElementsByTagName('stl19:LastName')[0]?.textContent?.trim() || '';
         const givenName = passenger.getElementsByTagName('stl19:FirstName')[0]?.textContent?.trim() || '';
-
+    
+        let seatAssignment: string | undefined = undefined;
+        const seatsNode = passenger.getElementsByTagName('stl19:Seats')[0];
+        if (seatsNode) {
+            const seatNode = seatsNode.getElementsByTagName('stl19:Seat')[0];
+            seatAssignment = seatNode?.getAttribute('Assignment')?.trim();
+        }
+    
         passengers.push({
-            label: `${surname}/${givenName}`, // Пример: "IVANOV/IVAN"
+            label: `${surname}/${givenName}`,
             value: id,
             givenName,
-            surname
+            surname,
+            seatAssignment
         });
     }
 

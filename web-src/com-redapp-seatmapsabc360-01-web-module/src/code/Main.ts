@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Module } from 'sabre-ngv-core/modules/Module';
 import { getService, registerService } from './Context';
 import { ExtensionPointService } from 'sabre-ngv-xp/services/ExtensionPointService';
+import {NoviceButtonConfig} from 'sabre-ngv-xp/configs/NoviceButtonConfig';
 import { RedAppSidePanelConfig } from 'sabre-ngv-xp/configs/RedAppSidePanelConfig';
 import { RedAppSidePanelButton } from 'sabre-ngv-redAppSidePanel/models/RedAppSidePanelButton';
 import { LayerService } from 'sabre-ngv-core/services/LayerService';
@@ -30,44 +31,77 @@ import { SeatMapsPopover } from './components/SeatMapsPopover';
 
 import { loadPnrDetailsFromSabre } from './components/loadPnrDetailsFromSabre';
 
+import { SampleComponent } from './views/SampleComponent';
+
 export class Main extends Module {
     init(): void {
         super.init();
         registerService(CustomWorkflowService);
 
-        // регистрация виджетов
-        this.registerSeatMapAvailTile();
-        this.registerSeatMapShoppingTile();
+    //делаем кнопку Command Helper Button
+      const onClick = (isOpen: boolean) => {
+        console.log('Command Helper Button onClick', isOpen);
+        // insert logic here
+      };
+      const onClose = () => {
+        console.log('Command Helper Popover onClose');
+        // insert logic here
+      };
 
-        // регистрация кнопок на правой панели
-        const xp = getService(ExtensionPointService);
-        const sidepanelMenu = new RedAppSidePanelConfig([
-            new RedAppSidePanelButton(
-                "Create PNR",
-                "btn-secondary side-panel-button",
-                () => { this.showForm(); },
-                false
-            ),
-            new RedAppSidePanelButton(
-                "SeatMaps ABC 360",
-                "btn-secondary side-panel-button",
-                () => { this.openSeatMaps(); },
-                false
-            ),
-            new RedAppSidePanelButton(
-              "Get EnhancedSeatMapRQ",
-              "btn-secondary side-panel-button",
-              () => { this.getEnhancedSeatMapRQ(); }, // 👈 новая кнопка
-              false
-          ),
-          new RedAppSidePanelButton(
-            "Show PNR Info",
-            "btn-secondary side-panel-button",
-            () => { this.showPnrInfo(); }, // 👈 метод, который мы сейчас напишем
-            false
-          ),
-        ]);
-        xp.addConfig("redAppSidePanel", sidepanelMenu);
+      const config = new NoviceButtonConfig(
+        // Define label for this button.
+        'Sample button',
+        // On top of text we add an icon from Font Awesome.
+        'fa-comment',
+        // Decorator is used to apply styles to the button that will be displayed in Command Helper Bar.
+        'com-sabre-redapp-example3-web-command-helper-button-web-module',
+        // Base React class to be mounted as root in ReactDOM.render().
+        SampleComponent,
+        // Priority of the button determines button position in the Command Helper Bar.
+        0,
+        onClick,
+        onClose
+      );
+
+      // Add button configuration to add a command helper button.
+      console.log('Adding Button config to ExtensionPointService...');
+      getService(ExtensionPointService).addConfig('novice-buttons', config); // novice-buttons
+      console.log('Button config added successfully.');
+
+      // регистрация виджетов
+      this.registerSeatMapAvailTile();
+      this.registerSeatMapShoppingTile();
+
+      // регистрация кнопок на правой панели
+      const xp = getService(ExtensionPointService);
+      const sidepanelMenu = new RedAppSidePanelConfig([
+        new RedAppSidePanelButton(
+          "Create PNR",
+          "btn-secondary side-panel-button",
+          () => { this.showForm(); },
+          false
+        ),
+        new RedAppSidePanelButton(
+          "SeatMaps ABC 360",
+          "btn-secondary side-panel-button",
+          () => { this.openSeatMaps(); },
+          false
+        ),
+        new RedAppSidePanelButton(
+          "Get EnhancedSeatMapRQ",
+          "btn-secondary side-panel-button",
+          () => { this.getEnhancedSeatMapRQ(); }, // 👈 новая кнопка
+          false
+        ),
+        new RedAppSidePanelButton(
+          "Show PNR Info",
+          "btn-secondary side-panel-button",
+          () => { this.showPnrInfo(); }, // 👈 метод, который мы сейчас напишем
+          false
+        ),
+      ]);
+
+      xp.addConfig("redAppSidePanel", sidepanelMenu);
 
     }
 
@@ -77,7 +111,7 @@ export class Main extends Module {
         ls.showOnLayer(CreatePNR, { display: "areaView", position: 42 });
     }
 
-    // открываем модальное окно с SeatMap
+    // открываем модальное окно/поповер с SeatMap
     openSeatMaps(): void {
         const publicModalsService = getService(PublicModalsService);
         publicModalsService.showReactModal({
@@ -125,7 +159,8 @@ export class Main extends Module {
         const airAvailabilityService = getService(PublicAirAvailabilityService);
       
         const showSeatMapAvailabilityModal = (data: any) => {
-          console.log('📥 [Availability] Received Data:', JSON.stringify(data, null, 2));
+
+          // console.log('📥 [Availability] Received Data:', JSON.stringify(data, null, 2));
       
           const modalOptions: ReactModalOptions = {
             header: 'SeatMaps ABC 360',
@@ -149,6 +184,9 @@ export class Main extends Module {
     // Shopping & Pricing Tile 
     private registerSeatMapShoppingTile(): void {
         // определяем config shoppingDrawerConfig для Shopping
+        
+        console.log("registerSeatMapShoppingTile");
+
         const shoppingDrawerConfig = new LargeWidgetDrawerConfig(SeatMapShoppingTile, SeatMapShoppingView, {
             title: 'Shopping Tile Widget' // заголовок окна
         });
@@ -162,7 +200,6 @@ export class Main extends Module {
     }
 
     // ===============================================
-
     // приватный метод для показа модального окна
     private createShowModalAction(view: React.FunctionComponent<any>, header: string): (data: any) => void {
         return ((data) => {
