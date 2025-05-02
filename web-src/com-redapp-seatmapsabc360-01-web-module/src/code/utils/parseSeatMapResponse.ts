@@ -1,93 +1,80 @@
-// файл: code/utils/parseSeatMapResponse.ts
-
-/**
- * Интерфейсы данных
- */
 interface Seat {
     label: string;
     x: number;
     y: number;
-}
-
-interface Row {
+  }
+  
+  interface Row {
     label: string;
     seats: Seat[];
-}
-
-interface Deck {
+  }
+  
+  interface Deck {
     id: string;
     name: string;
     rows: Row[];
-}
-
-interface AvailabilityItem {
+  }
+  
+  interface AvailabilityItem {
     label: string;
     price: number;
     currency: string;
     color: string;
-}
-
-/**
- * Определяет цвет места на основе его атрибутов
- */
-function getSeatColor(seatEl: Element): string {
-    const occupiedInd = seatEl.getAttribute('occupiedInd') === 'true';
-    const offerEl = seatEl.querySelector('Offer');
-
-    if (occupiedInd) return 'gray'; // занятое место
-    if (offerEl) return 'orange'; // требует доплаты
-
-    return 'lightblue'; // обычное свободное место
-}
-
-/**
- * Парсит XML-ответ EnhancedSeatMapRS от Sabre
- */
-export function parseSeatMapResponse(xml: Document): {
+  }
+  
+  function getSeatColor(seatEl: Element): string {
+    const isOccupied = seatEl.getAttribute('occupiedInd') === 'true';
+    const hasOffer = seatEl.querySelector('Offer');
+    if (isOccupied) return 'gray';
+    if (hasOffer) return 'orange';
+    return 'lightblue';
+  }
+  
+  export function parseSeatMapResponse(xml: Document): {
     layout: { decks: Deck[] };
     availability: AvailabilityItem[];
-} {
+  } {
     const layout: { decks: Deck[] } = {
-        decks: [{ id: 'main-deck', name: 'Main Deck', rows: [] }]
+      decks: [{ id: 'main-deck', name: 'Main Deck', rows: [] }]
     };
     const availability: AvailabilityItem[] = [];
-
+  
     const rowElements = Array.from(xml.querySelectorAll('Row'));
-
-    rowElements.forEach(rowEl => {
-        const rowNumber = rowEl.querySelector('RowNumber')?.textContent?.trim();
-        if (!rowNumber) return;
-
-        const row: Row = { label: rowNumber, seats: [] };
-        const seatElements = Array.from(rowEl.querySelectorAll('Seat'));
-
-        seatElements.forEach(seatEl => {
-            const seatLabel = seatEl.querySelector('Number')?.textContent?.trim();
-            if (!seatLabel) return;
-
-            const priceEl = seatEl.querySelector('Offer TotalAmount');
-            const price = priceEl ? parseFloat(priceEl.textContent || '0') : 0;
-            const currency = priceEl?.getAttribute('currencyCode') || 'USD';
-
-            const color = getSeatColor(seatEl);
-
-            availability.push({
-                label: `${rowNumber}${seatLabel}`,
-                price,
-                currency,
-                color
-            });
-
-            const seatX = 60 + row.seats.length * 60;
-            const seatY = 50 + parseInt(rowNumber) * 30;
-
-            row.seats.push({ label: seatLabel, x: seatX, y: seatY });
+  
+    rowElements.forEach((rowEl, rowIndex) => {
+      const rowNumber = rowEl.querySelector('RowNumber')?.textContent?.trim() || '';
+      if (!/^\d+$/.test(rowNumber)) return;
+  
+      const row: Row = { label: rowNumber, seats: [] };
+      const seatElements = Array.from(rowEl.querySelectorAll('Seat'));
+  
+      seatElements.forEach((seatEl, seatIndex) => {
+        const seatLabel = seatEl.querySelector('Number')?.textContent?.trim();
+        if (!seatLabel) return;
+  
+        const offerEl = seatEl.querySelector('Offer TotalAmount');
+        const price = offerEl ? parseFloat(offerEl.textContent || '0') : 0;
+        const currency = offerEl?.getAttribute('currencyCode') || 'USD';
+        const color = getSeatColor(seatEl);
+  
+        availability.push({
+          label: `${rowNumber}${seatLabel}`,
+          price,
+          currency,
+          color
         });
-
-        layout.decks[0].rows.push(row);
+  
+        row.seats.push({
+          label: seatLabel,
+          x: 60 + seatIndex * 60,
+          y: 50 + rowIndex * 40
+        });
+      });
+  
+      layout.decks[0].rows.push(row);
     });
-
+  
     layout.decks[0].rows.sort((a, b) => parseInt(a.label) - parseInt(b.label));
-
+  
     return { layout, availability };
-}
+  }
