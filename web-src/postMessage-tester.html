@@ -18,9 +18,9 @@
 <div>
   <label for="cabinClassSelect">Выберите класс:</label>
   <select id="cabinClassSelect">
-    <option value="Y">Economy (Y)</option>
-    <option value="S">Premium Economy (S)</option>
-    <option value="C" selected>Business (C)</option>
+    <option value="E">Economy (Y)</option>
+    <option value="P">Premium Economy (S)</option>
+    <option value="B" selected>Business (C)</option>
     <option value="F">First (F)</option>
     <option value="A">All cabins (A)</option>
   </select>
@@ -39,18 +39,56 @@
 
     const message = {
       type: "seatMaps",
-      config: {
-        width: 400,
-        lang: "EN",
-        builtInTooltip: true,
-        visibleFuselage: true,
-        visibleWings: true,
-        singleDeckMode: true,
-        builtInDeckSelector: true,
-        horizontal: false,
-        rightToLeft: false,
-      },
-      flight: {
+      config: JSON.stringify( {width: 400,
+      lang: 'EN',
+      horizontal: false,
+      rightToLeft: false,
+      visibleFuselage: cabinClass === 'A',
+      visibleWings: true,
+      builtInDeckSelector: true,
+      singleDeckMode: true,
+      builtInTooltip: true,
+      externalPassengerManagement: false,
+      tooltipOnHover: false,
+      colorTheme: {
+        deckLabelTitleColor: 'white',
+        deckHeightSpacing: 100,
+        wingsWidth: 50,
+        deckSeparation: 0,
+        floorColor: 'rgb(30,60,90)',
+        seatLabelColor: 'white',
+        seatStrokeColor: 'rgb(237, 237, 237)',
+        seatStrokeWidth: 1,
+        seatArmrestColor: '#cccccc',
+        notAvailableSeatsColor: 'lightgray',
+        bulkBaseColor: 'dimgrey',
+        bulkCutColor: 'lightgrey',
+        bulkIconColor: 'darkslategray',
+        defaultPassengerBadgeColor: 'darkred',
+        fontFamily: 'Montserrat, sans-serif',
+        tooltipBackgroundColor: 'rgb(255,255,255)',
+        tooltipHeaderColor: '#4f6f8f',
+        tooltipBorderColor: 'rgb(255,255,255)',
+        tooltipFontColor: '#4f6f8f',
+        tooltipIconColor: '#4f6f8f',
+        tooltipIconBorderColor: '#4f6f8f',
+        tooltipIconBackgroundColor: '#fff',
+        tooltipSelectButtonTextColor: '#fff',
+        tooltipSelectButtonBackgroundColor: 'rgb(42, 85, 128)',
+        tooltipCancelButtonTextColor: '#fff',
+        tooltipCancelButtonBackgroundColor: 'rgb(55, 55, 55)',
+        deckSelectorStrokeColor: '#fff',
+        deckSelectorFillColor: 'rgba(55, 55, 55, 0.5)',
+        deckSelectorSize: 25,
+        fuselageStrokeWidth: 16,
+        fuselageFillColor: 'lightgrey',
+        fuselageStrokeColor: 'darkgrey',
+        fuselageWindowsColor: 'darkgrey',
+        fuselageWingsColor: 'rgba(55, 55, 55, 0.5)',
+        exitIconUrlLeft: 'https://panorama.quicket.io/icons/exit-left.svg',
+        exitIconUrlRight: 'https://panorama.quicket.io/icons/exit-right.svg',
+      }}),
+      flight: JSON.stringify({
         id: "111",
         airlineCode: "EK",
         flightNo: "50",
@@ -59,8 +97,8 @@
         arrival: "DXB",
         cabinClass: cabinClass,
         passengerType: "ADT"
-      },
-      availability: [
+      }),
+      availability: JSON.stringify([
         {
           currency: "USD",
           label: "20A",
@@ -82,8 +120,8 @@
           ],
           color: "red"
         }
-      ],
-      passengers: [
+      ]),
+      passengers: JSON.stringify([
         {
           id: "1",
           passengerType: "ADT",
@@ -98,13 +136,13 @@
           passengerLabel: "Child Smith",
           passengerColor: "orange"
         }
-      ],
-      currentDeckIndex: 0
+      ]),
+      currentDeckIndex: "0"
     };
 
     // Отправка сообщения
-    iframe.contentWindow.postMessage(message, "*");
-    document.getElementById('sentData').textContent = JSON.stringify(message, null, 2);
+    iframe.contentWindow.postMessage(message, "*"); // отправка
+    document.getElementById('sentData').textContent = JSON.stringify(message, null, 2); // для лога
     console.log("✅ Sent message to iframe:", message);
   }
 
