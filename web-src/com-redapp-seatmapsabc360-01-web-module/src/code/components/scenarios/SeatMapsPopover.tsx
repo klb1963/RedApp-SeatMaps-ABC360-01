@@ -3,16 +3,16 @@
 // file: SeatMapsPopover.tsx
 
 import * as React from 'react';
-import { generateFlightData, FlightSegmentInput } from '../utils/generateFlightData';
-import { bookingClassToCabinCode } from '../utils/mapCabinToCode';
-import { getService } from '../Context';
+import { generateFlightData, FlightSegmentInput } from '../../utils/generateFlightData';
+import { bookingClassToCabinCode } from '../../utils/mapCabinToCode';
+import { getService } from '../../Context';
 import { PublicModalsService } from 'sabre-ngv-modals/services/PublicModalService';
-import SeatMapComponentBase from './SeatMapComponentBase';
-import { quicketConfig } from '../utils/quicketConfig';
-import { PassengerOption, SegmentOption } from '../utils/parcePnrData';
-import { loadPnrDetailsFromSabre } from './loadPnrDetailsFromSabre';
-import { loadSeatMapFromSabre } from './loadSeatMapFromSabre';
-import { parseSeatMapResponse } from '../utils/parseSeatMapResponse';
+import SeatMapComponentBase from '../SeatMap/SeatMapComponentBase';
+import { quicketConfig } from '../../utils/quicketConfig';
+import { PassengerOption, SegmentOption } from '../../utils/parcePnrData';
+import { loadPnrDetailsFromSabre } from '../../services/loadPnrDetailsFromSabre';
+import { loadSeatMapFromSabre } from '../../services/loadSeatMapFromSabre';
+import { parseSeatMapResponse } from '../../utils/parseSeatMapResponse';
 
 interface State {
   passengers: PassengerOption[];

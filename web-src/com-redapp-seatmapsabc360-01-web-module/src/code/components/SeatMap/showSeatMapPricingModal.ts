@@ -1,10 +1,10 @@
 import * as React from 'react';
-import { getService } from '../Context';
+import { getService } from '../../Context';
 import { PublicModalsService } from 'sabre-ngv-modals/services/PublicModalService';
 import { ReactModalOptions } from 'sabre-ngv-modals/components/PublicReactModal/ReactModalOptions';
 
 import SeatMapComponentPricing from './SeatMapComponentPricing';
-import { quicketConfig } from '../utils/quicketConfig';
+import { quicketConfig } from '../../utils/quicketConfig';
 
 export function showSeatMapPricingModal(): void {
   const modalService = getService(PublicModalsService);

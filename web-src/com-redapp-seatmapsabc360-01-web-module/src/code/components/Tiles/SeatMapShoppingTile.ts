@@ -7,7 +7,7 @@ import { WithoutFocusOnClick } from 'sabre-ngv-app/app/common/mixins/WithoutFocu
 import { Initial } from 'sabre-ngv-core/decorators/classes/Initial';
 import { Mixin } from 'sabre-ngv-core/decorators/classes/Mixin';
 import { CssClass } from 'sabre-ngv-core/decorators/classes/view/CssClass';
-import { extractSegmentData } from '../extractSegmentData';
+import { extractSegmentData } from '../../utils/extractSegmentData';
 
 @CssClass('com-redapp-seatmapsabc360-01-web-module', { overwrite: false })
 @Initial<TileOptions>({

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { AirPricingData } from 'sabre-ngv-pricing/response/interfaces/AirPricingData';
-import { showSeatMapPricingModal } from '../showSeatMapPricingModal';
+import { showSeatMapPricingModal } from '../SeatMap/showSeatMapPricingModal';
 
 export const PricingTile = (data: AirPricingData): React.ReactElement => {
   const handleClick = () => {

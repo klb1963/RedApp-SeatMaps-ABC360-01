@@ -5,7 +5,7 @@ import * as ReactDOM from 'react-dom';
 import { AbstractView } from 'sabre-ngv-app/app/AbstractView';
 import { AbstractModel } from 'sabre-ngv-app/app/AbstractModel';
 import { FlightSegment } from 'sabre-ngv-app/app/common/data/flight/FlightSegment';
-import SeatMapComponentShopping from '../SeatMapComponentShopping';
+import SeatMapComponentShopping from '../SeatMap/SeatMapComponentShopping';
 import { quicketConfig } from '../../utils/quicketConfig';
 import { CssClass } from 'sabre-ngv-core/decorators/classes/view/CssClass';
 import { Template } from 'sabre-ngv-core/decorators/classes/view/Template';

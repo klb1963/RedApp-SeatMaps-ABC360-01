@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import SeatMapComponentBase from './SeatMapComponentBase';
-import { generateFlightData } from '../utils/generateFlightData';
+import { generateFlightData } from '../../utils/generateFlightData';
 
 interface SeatMapComponentShoppingProps {
   config: any;

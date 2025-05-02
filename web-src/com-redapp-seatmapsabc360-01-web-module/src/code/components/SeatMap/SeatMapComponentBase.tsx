@@ -21,12 +21,12 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   config,
   flightSegments,
   initialSegmentIndex = 0,
-  showCabinClassSelector = false,
-  defaultCabinClass = 'A',
   generateFlightData,
   availability = [],
   passengers = [],
   showSegmentSelector = true,
+  showCabinClassSelector = false,
+  defaultCabinClass = 'A',
   assignedSeats
 }) => {
   console.count('🔁 Render SeatMapComponentBase');

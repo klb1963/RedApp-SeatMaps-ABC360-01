@@ -1,7 +1,7 @@
 // файл: code/components/ShowPnrInfo.tsx
 
 import * as React from 'react';
-import { XmlViewer } from '../utils/XmlViewer'; // если хочешь также показать сырой XML
+import { XmlViewer } from '../../utils/XmlViewer'; // если хочешь также показать сырой XML
 
 interface ShowPnrInfoProps {
     pnrData: any;

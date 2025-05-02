@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 import { AirPricingData } from 'sabre-ngv-pricing/response/interfaces/AirPricingData';
-import { showSeatMapPricingModal } from '../showSeatMapPricingModal';
+import { showSeatMapPricingModal } from '../SeatMap/showSeatMapPricingModal';
 
 export const PricingView = (data: AirPricingData) : React.ReactElement => {
     useEffect(() => {

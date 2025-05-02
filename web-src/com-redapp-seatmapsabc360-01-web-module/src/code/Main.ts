@@ -15,21 +15,21 @@ import { DrawerService } from 'sabre-ngv-app/app/services/impl/DrawerService';
 import { LargeWidgetDrawerConfig } from 'sabre-ngv-core/configs/drawer/LargeWidgetDrawerConfig';
 
 import { CustomWorkflowService } from './services/CustomWorkflowService';
-import { SeatMapAvailTile } from './components/widgets/SeatMapAvailTile';
-import SeatMapComponentAvail from './components/SeatMapComponentAvail';
+import { SeatMapAvailTile } from './components/Tiles/SeatMapAvailTile';
+import SeatMapComponentAvail from './components/SeatMap/SeatMapComponentAvail';
 import { quicketConfig } from './utils/quicketConfig';
 
-import { SeatMapShoppingTile } from './components/widgets/SeatMapShoppingTile';
-import { SeatMapShoppingView } from './components/widgets/SeatMapShoppingView';
+import { SeatMapShoppingTile } from './components/Tiles/SeatMapShoppingTile';
+import { SeatMapShoppingView } from './components/Views/SeatMapShoppingView';
 
 import { IAirPricingService } from 'sabre-ngv-pricing/services/IAirPricingService';
-import { PricingTile } from './components/widgets/PricingTile';
-import { PricingView } from './components/widgets/PricingView';
+import { PricingTile } from './components/Tiles/SeatMapPricingTile';
+import { PricingView } from './components/Views/SaetMapPricingView';
 
-import { CreatePNR } from './components/createPNR/CreatePNR';
-import { SeatMapsPopover } from './components/SeatMapsPopover';
+import { CreatePNR } from './components/PNR/CreatePNR';
+import { SeatMapsPopover } from './components/scenarios/SeatMapsPopover';
 
-import { loadPnrDetailsFromSabre } from './components/loadPnrDetailsFromSabre';
+import { loadPnrDetailsFromSabre } from './services/loadPnrDetailsFromSabre';
 
 import { SampleComponent } from './views/SampleComponent';
 
@@ -208,13 +208,13 @@ export class Main extends Module {
 
       getService(PublicModalsService).showReactModal(modalOptions);
     };
-      
-        airAvailabilityService.createAirAvailabilitySearchTile(
-          SeatMapAvailTile,
-          showSeatMapAvailabilityModal,
-          'SeatMaps ABC 360'
-        );
-      }
+
+    airAvailabilityService.createAirAvailabilitySearchTile(
+      SeatMapAvailTile,
+      showSeatMapAvailabilityModal,
+      'SeatMaps ABC 360'
+    );
+  }
 
     // Shopping & Pricing Tile 
     private registerSeatMapShoppingTile(): void {
