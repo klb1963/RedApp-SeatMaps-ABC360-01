@@ -20,9 +20,11 @@ const SeatMapComponentPricing: React.FC<SeatMapComponentPricingProps> = ({
       config={config}
       flightSegments={flightSegments}
       initialSegmentIndex={selectedSegmentIndex}
-      showCabinClassSelector={false}
-      generateFlightData={generateFlightData}
-      passengers={[]}
+      cabinClass="Y" // 👈 передаём обязательно: Economy
+      generateFlightData={(segment, index, cabin) =>
+        generateFlightData(segment, index)
+      }
+      passengers={[]} // оставлено как есть
     />
   );
 };

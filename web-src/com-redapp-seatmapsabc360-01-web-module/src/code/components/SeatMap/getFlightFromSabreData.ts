@@ -1,65 +1,67 @@
-// файл: getFlightFromSabreData.ts
-
-const equipmentNames: { [code: string]: string } = {
-  '388': 'Airbus A380',
-  '77W': 'Boeing 777-300ER',
-  '789': 'Boeing 787-9 Dreamliner',
-  '320': 'Airbus A320',
-  '321': 'Airbus A321',
-  '738': 'Boeing 737-800',
-  '319': 'Airbus A319',
-  '744': 'Boeing 747-400',
-  '359': 'Airbus A350-900',
-  'E90': 'Embraer 190',
-};
+// файл: code/components/SeatMap/getFlightFromSabreData.ts
 
 export const getFlightFromSabreData = (
   data: any,
-  segmentIndex: number = 0,
-  cabinClass: string = ''
+  segmentIndex: number = 0
 ) => {
   const segment = data.flightSegments?.[segmentIndex];
 
   if (!segment) {
     console.warn(`⚠️ Segment index ${segmentIndex} not found`);
-    return {
-      id: '001',
-      airlineCode: '',
-      flightNo: '',
-      departureDate: '',
-      departure: '',
-      arrival: '',
-      cabinClass,
-      equipment: ''
-    };
+    return null;
   }
 
-  const departureDateTime = segment.DepartureDateTime;
-  const airlineCode = segment?.MarketingAirline?.EncodeDecodeElement?.Code || segment?.MarketingAirline || '';
-  const flightNo = segment?.FlightNumber || '';
-  const origin = segment?.OriginLocation?.EncodeDecodeElement?.Code || segment?.OriginLocation || '';
-  const destination = segment?.DestinationLocation?.EncodeDecodeElement?.Code || segment?.DestinationLocation || '';
-  const equipmentCode = segment?.Equipment?.EncodeDecodeElement?.Code || '';
+  console.log('🔍 Исходный сегмент:', segment);
 
-  // 📌 Логи для отладки
-  console.log('✈️ airlineCode:', airlineCode);
-  console.log('🔢 flightNo:', flightNo);
-  console.log('📅 departureDateTime:', departureDateTime);
-  console.log('🌍 departure:', origin);
-  console.log('🌍 arrival:', destination);
-  console.log('🛫 equipmentCode:', equipmentCode);
-  console.log('💺 cabinClass:', cabinClass);
+  const airlineCode =
+    segment?.MarketingAirline?.EncodeDecodeElement?.Code ||
+    segment?.marketingAirline ||
+    'XX';
 
-  const departureDate = departureDateTime?.split('T')[0] || '';
+  const flightNo =
+    segment?.FlightNumber ||
+    segment?.flightNumber ||
+    '000';
 
-  return {
-    id: '001',
+  const origin =
+    segment?.OriginLocation?.EncodeDecodeElement?.Code ||
+    segment?.origin ||
+    '???';
+
+  const destination =
+    segment?.DestinationLocation?.EncodeDecodeElement?.Code ||
+    segment?.destination ||
+    '???';
+
+  const rawDeparture =
+    segment?.departureDate ||
+    segment?.departureDateTime || 
+    '';
+
+  const departureDate = rawDeparture
+    ? new Date(rawDeparture).toISOString().split('T')[0]
+    : '';
+
+  if (!departureDate) {
+    console.warn('⚠️ Не удалось извлечь дату вылета из:', rawDeparture);
+  } else {
+    console.log('📅 Извлечена дата вылета:', departureDate);
+  }
+
+  const cabinClass = segment?.cabinClass || 'E';
+
+  const result = {
+    id: '111',
     airlineCode,
     flightNo,
     departureDate,
     departure: origin,
     arrival: destination,
-    cabinClass: cabinClass === 'A' ? undefined : cabinClass, // "A" — это all cabins → не отправляем
-    equipment: equipmentCode // ⬅️ используем код, не человекочитаемое имя
+    cabinClass: cabinClass === 'A' ? undefined : cabinClass,
+    passengerType: 'ADT'
   };
+
+  console.log('✅ [getFlightFromSabreData] Итоговый объект flight:', result);
+
+  return result;
 };

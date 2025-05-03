@@ -2,14 +2,14 @@
 
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
+import { mapCabinToCode } from '../../utils/mapCabinToCode';
 
 interface SeatMapComponentBaseProps {
   config: any;
   flightSegments: any[];
   initialSegmentIndex?: number;
-  showCabinClassSelector?: boolean;
-  defaultCabinClass?: 'F' | 'C' | 'S' | 'Y' | 'A';
   generateFlightData: (segment: any, segmentIndex: number, cabinClass?: string) => any;
+  cabinClass: 'F' | 'C' | 'S' | 'Y' | 'A'; // 👈 обязательно передаётся извне
   layoutData?: any;
   availability?: any[];
   passengers?: any[];
@@ -22,47 +22,56 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   flightSegments,
   initialSegmentIndex = 0,
   generateFlightData,
+  cabinClass,
+  layoutData,
   availability = [],
   passengers = [],
   showSegmentSelector = true,
-  showCabinClassSelector = false,
-  defaultCabinClass = 'A',
   assignedSeats
 }) => {
-  console.count('🔁 Render SeatMapComponentBase');
-
   const [segmentIndex, setSegmentIndex] = useState(initialSegmentIndex);
-  const [cabinClass, setCabinClass] = useState<'F' | 'C' | 'S' | 'Y' | 'A'>(defaultCabinClass);
-  const [selectedSeat, setSelectedSeat] = useState<any>(null);
-  const [flight, setFlight] = useState<any>(null);
-
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [flight, setFlight] = useState<any>(null); // объект, который отправим в библиотеку
+  const iframeRef = useRef<HTMLIFrameElement>(null); // ссылка на iframe
 
   const currentSegment = flightSegments[segmentIndex];
 
-  // 🔍 Логи для отладки
+  // 🔄 Генерация flight при изменении сегмента или класса обслуживания
   useEffect(() => {
-    console.log('📡 [SeatMapComponentBase] 🔄 Обновлены flightSegments:', flightSegments);
-  }, [flightSegments]);
-
-  useEffect(() => {
-    console.log('🎯 [SeatMapComponentBase] Выбранный segmentIndex:', segmentIndex);
-  }, [segmentIndex]);
-
-  // 🎯 Генерация flight при изменении сегмента или класса
-  useEffect(() => {
-    if (!currentSegment || !currentSegment.marketingAirline || !currentSegment.flightNumber) {
-      console.warn('⛔ [SeatMapComponentBase] Невозможно сгенерировать flight: сегмент некорректен.', currentSegment);
+    if (
+      !flightSegments.length ||
+      !currentSegment ||
+      !currentSegment.marketingAirline ||
+      !currentSegment.flightNumber
+    ) {
+      console.warn('⛔ Невозможно сгенерировать flight: сегмент некорректен.', currentSegment);
       setFlight(null);
       return;
     }
 
-    const generatedFlight = generateFlightData(currentSegment, segmentIndex);
-    console.log('✅ [SeatMapComponentBase] Сформирован flight:', generatedFlight);
-    setFlight(generatedFlight);
-  }, [currentSegment, segmentIndex, cabinClass]);
+    const generatedFlight = generateFlightData(currentSegment, segmentIndex, cabinClass);
 
-  // 🚀 Отправка сообщения в iframe при готовности данных
+    if (!generatedFlight) {
+      console.warn('⚠️ generateFlightData вернул null или undefined');
+      setFlight(null);
+      return;
+    }
+
+    console.log('🔧 [generateFlightData] результат:', generatedFlight);
+
+    // 🪑 Преобразуем cabinClass для библиотеки визуализации
+    const cabinClassForLib = mapCabinToCode(cabinClass);
+
+    const flightForIframe = {
+      ...generatedFlight,
+      cabinClass: cabinClassForLib,
+      passengerType: 'ADT',
+    };
+
+    console.log('✅ Сформирован flight:', flightForIframe);
+    setFlight(flightForIframe);
+  }, [flightSegments, segmentIndex, cabinClass]);
+
+  // 📤 Отправка сообщения в iframe при обновлении flight
   useEffect(() => {
     if (!flight || flight.flightNo === '000' || flight.airlineCode === 'XX') {
       console.warn('[⏳ SeatMaps] Пропущена отправка: flight ещё не готов или некорректен.', flight);
@@ -72,90 +81,76 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
     const iframe = iframeRef.current;
     if (!iframe?.contentWindow) return;
 
-    const message: any = {
+    const message: Record<string, string> = {
       type: 'seatMaps',
       config: JSON.stringify(config),
-      flight: JSON.stringify(flight)
+      flight: JSON.stringify(flight),
+      currentDeckIndex: '0',
     };
 
-    if (availability.length > 0) {
-      message.availability = JSON.stringify(availability);
-    }
+    console.log('%c📤 [SeatMaps] Итоговое сообщение в библиотеку:', 'color: green; font-weight: bold;');
+    console.log(JSON.stringify(message, null, 2));
 
-    if (passengers.length > 0) {
-      message.passengers = JSON.stringify(passengers);
-    }
-
-    if (assignedSeats && assignedSeats.length > 0) {
-      message.assignedSeats = JSON.stringify(assignedSeats);
-    }
-
-    console.log('[📤 SeatMaps] Sending flight to iframe:', flight);
     iframe.contentWindow.postMessage(message, '*');
   }, [flight]);
 
-  // Слушатель iframe
+  // ⏱ Повторная инициализация через короткий таймер
   useEffect(() => {
-    const appMessageListener = (event: MessageEvent) => {
-      const { type } = event.data;
-      if (type === 'seatMaps') {
-        // обработка ответа
-      }
-    };
-    window.addEventListener('message', appMessageListener);
-    return () => window.removeEventListener('message', appMessageListener);
-  }, []);
+    if (!flight) return;
 
-  useEffect(() => {
-    if (selectedSeat) {
-      console.log('✅ Выбранное место готово для бронирования:', selectedSeat);
-    }
-  }, [selectedSeat]);
+    const timeout = setTimeout(() => {
+      const iframe = iframeRef.current;
+      if (!iframe?.contentWindow) return;
+
+      const message: Record<string, string> = {
+        type: 'seatMaps',
+        config: JSON.stringify(config),
+        flight: JSON.stringify(flight),
+        currentDeckIndex: '0'
+      };
+
+      console.log('%c🚀 [SeatMaps] Повторная инициализация через timeout', 'color: orange; font-weight: bold;');
+      iframe.contentWindow.postMessage(message, '*');
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [flight]);
 
   return (
     <div style={{ padding: '1rem' }}>
+      {/* 👇 Селектор сегмента (если включён) */}
       {showSegmentSelector && (
         <div style={{ marginBottom: '1rem' }}>
-          <label htmlFor="segmentSelect">Выберите сегмент: </label>
+          <label>Сегмент:</label>
           <select
-            id="segmentSelect"
             value={segmentIndex}
             onChange={(e) => setSegmentIndex(Number(e.target.value))}
           >
-            {flightSegments.map((segment, index) => (
-              <option key={index} value={index}>
-                {segment.marketingAirline || segment.MarketingAirline?.EncodeDecodeElement?.Code || 'XX'}{' '}
-                {segment.flightNumber || segment.FlightNumber || '000'} →{' '}
-                {segment.origin || segment.OriginLocation?.EncodeDecodeElement?.Code || '???'} –
-                {segment.destination || segment.DestinationLocation?.EncodeDecodeElement?.Code || '???'}
+            {flightSegments.map((seg: any, idx: number) => (
+              <option key={idx} value={idx}>
+                {seg.origin} → {seg.destination}, рейс {seg.flightNumber}
               </option>
             ))}
           </select>
         </div>
       )}
 
-      {showCabinClassSelector && (
-        <div style={{ marginBottom: '1rem' }}>
-          <label htmlFor="cabinClassSelect">Выберите класс (кабину): </label>
-          <select
-            id="cabinClassSelect"
-            value={cabinClass}
-            onChange={(e) => setCabinClass(e.target.value as any)}
-          >
-            <option value="Y">Economy</option>
-            <option value="S">Premium Economy</option>
-            <option value="C">Business</option>
-            <option value="F">First</option>
-            <option value="A">All cabins</option>
-          </select>
-        </div>
-      )}
+      {/* 🔍 Отладочная информация */}
+      <div style={{ marginBottom: '1rem', fontSize: '0.85rem', color: '#555', background: '#f9f9f9', padding: '0.5rem', border: '1px solid #ccc' }}>
+        <strong>Debug info:</strong>
+        <div>segmentIndex: {segmentIndex}</div>
+        <div>cabinClass: {cabinClass}</div>
+        <div>flightNo: {flight?.flightNo}</div>
+        <div>airlineCode: {flight?.airlineCode}</div>
+      </div>
 
+      {/* ✈️ Полный JSON flight-объекта */}
       <div style={{ marginBottom: '1rem', fontSize: '0.9rem', color: '#333' }}>
         <strong>🛫 Flight info:</strong>
         <pre>{JSON.stringify(flight, null, 2)}</pre>
       </div>
 
+      {/* 👉 iframe с картой салона */}
       <iframe
         ref={iframeRef}
         src="https://quicket.io/react-proxy-app/"

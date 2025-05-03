@@ -13,14 +13,14 @@
 </head>
 <body>
 
-<h1>🚀 SeatMap Combined Payload Test</h1>
+<h1> ✈️ SeatMap Test 🪑 </h1>
 
 <div>
   <label for="cabinClassSelect">Выберите класс:</label>
   <select id="cabinClassSelect">
-    <option value="E">Economy (Y)</option>
+    <option value="E" selected>Economy (Y)</option>
     <option value="P">Premium Economy (S)</option>
-    <option value="B" selected>Business (C)</option>
+    <option value="B" >Business (C)</option>
     <option value="F">First (F)</option>
     <option value="A">All cabins (A)</option>
   </select>
@@ -39,7 +39,8 @@
 
     const message = {
       type: "seatMaps",
-      config: JSON.stringify( {width: 400,
+      config: JSON.stringify( {
+      width: 400,
       lang: 'EN',
       horizontal: false,
       rightToLeft: false,

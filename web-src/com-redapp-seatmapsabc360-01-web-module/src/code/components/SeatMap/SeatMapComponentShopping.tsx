@@ -16,8 +16,10 @@ const SeatMapComponentShopping: React.FC<SeatMapComponentShoppingProps> = ({ con
     <SeatMapComponentBase
       config={config}
       flightSegments={flightSegments}
-      showCabinClassSelector={false}
-      generateFlightData={generateFlightData}
+      cabinClass="Y" // 👈 по умолчанию — Economy (Sabre)
+      generateFlightData={(segment, index, cabin) =>
+        generateFlightData(segment, index)
+      }
     />
   );
 };

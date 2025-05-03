@@ -198,14 +198,13 @@ export class Main extends Module {
       // console.log('📥 [Availability] Received Data:', JSON.stringify(data, null, 2));
 
       const modalOptions: ReactModalOptions = {
-        header: 'SeatMaps ABC 360',
+        header: 'SeatMaps ABC 360++',
         component: React.createElement(SeatMapComponentAvail, {
           config: quicketConfig,
           data: data
         }),
         modalClassName: 'react-tile-modal-class'
       };
-
       getService(PublicModalsService).showReactModal(modalOptions);
     };
 

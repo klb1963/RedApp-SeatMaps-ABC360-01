@@ -32,7 +32,10 @@ const SeatMapComponentPnr: React.FC<SeatMapComponentPnrProps> = ({
       flightSegments={flightSegments}
       initialSegmentIndex={0}
       showSegmentSelector={showSegmentSelector}
-      generateFlightData={generateFlightData}
+      cabinClass={flight.cabinClass || 'Y'} // 👈 обязательно передаём
+      generateFlightData={(segment, index, cabin) =>
+        generateFlightData(segment, index)
+      }
       availability={availability}
       passengers={passengers}
     />

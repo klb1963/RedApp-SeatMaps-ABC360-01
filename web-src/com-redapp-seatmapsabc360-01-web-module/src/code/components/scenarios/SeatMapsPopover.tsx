@@ -4,9 +4,7 @@
 
 import * as React from 'react';
 import { generateFlightData, FlightSegmentInput } from '../../utils/generateFlightData';
-import { bookingClassToCabinCode } from '../../utils/mapCabinToCode';
-import { getService } from '../../Context';
-import { PublicModalsService } from 'sabre-ngv-modals/services/PublicModalService';
+import { mapCabinToCode } from '../../utils/mapCabinToCode';
 import SeatMapComponentBase from '../SeatMap/SeatMapComponentBase';
 import { quicketConfig } from '../../utils/quicketConfig';
 import { PassengerOption, SegmentOption } from '../../utils/parcePnrData';
@@ -61,11 +59,14 @@ export class SeatMapsPopover extends React.Component<Record<string, unknown>, St
         departureDateTime: `${segment.departureDate}T00:00:00`,
         origin: segment.origin,
         destination: segment.destination,
-        cabinClass: bookingClassToCabinCode(segment.bookingClass),
+        cabinClass: mapCabinToCode(segment.bookingClass),
         equipment: segment.equipment
       };
   
-      const flight = generateFlightData(flightSegmentInput, 0);
+      const flight = {
+        ...generateFlightData(flightSegmentInput, 0),
+        equipment: segment.equipment || ''
+      };
   
       const mappedPassengers = passengers.map(p => ({
         id: p.value,
@@ -153,6 +154,7 @@ export class SeatMapsPopover extends React.Component<Record<string, unknown>, St
           <h3>✈️ Рейс: {flight.airlineCode}{flight.flightNo}</h3>
           <p><strong>Дата вылета:</strong> {flight.departureDate}</p>
           <p><strong>Маршрут:</strong> {flight.departure} → {flight.arrival}</p>
+          <p><strong>Самолёт:</strong> {flight.equipment || 'неизвестен'}</p>
           <p><strong>Класс:</strong> {flight.cabinClass}</p>
           <p><strong>Пассажиры:</strong>{' '}
             {mappedPassengers.map(p => (
@@ -171,11 +173,13 @@ export class SeatMapsPopover extends React.Component<Record<string, unknown>, St
           config={quicketConfig}
           availability={availability}
           passengers={mappedPassengers}
-          generateFlightData={generateFlightData}
+          assignedSeats={assignedSeats}
+          generateFlightData={(segment, index, cabin) =>
+            generateFlightData(segment, index)
+          }
           initialSegmentIndex={0}
           showSegmentSelector={false}
-          showCabinClassSelector={false}
-          assignedSeats={assignedSeats}
+          cabinClass={flight.cabinClass || 'Y'} // 👈 обязательно передаём
         />
       </div>
     );
