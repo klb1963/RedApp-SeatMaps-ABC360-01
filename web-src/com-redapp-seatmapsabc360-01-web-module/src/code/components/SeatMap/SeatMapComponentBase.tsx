@@ -142,6 +142,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
         <div>cabinClass: {cabinClass}</div>
         <div>flightNo: {flight?.flightNo}</div>
         <div>airlineCode: {flight?.airlineCode}</div>
+        <div>equipment: {flight?.equipment}</div>
       </div>
 
       {/* ✈️ Полный JSON flight-объекта */}

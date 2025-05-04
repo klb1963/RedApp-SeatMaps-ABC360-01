@@ -35,7 +35,7 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
     origin: seg.origin || seg.OriginLocation?.EncodeDecodeElement?.Code || '???',
     destination: seg.destination || seg.DestinationLocation?.EncodeDecodeElement?.Code || '???',
     cabinClass: mapCabinToCode(seg.bookingClass || seg.BookingClass || 'Y'),
-    equipment: seg.equipment || seg.Equipment || ''
+    equipment: seg.Equipment?.EncodeDecodeElement?.SimplyDecoded || seg.equipment || ''
   }));
 
   // 🔄 При смене сегмента — сбрасываем cabinClass на Economy
@@ -57,47 +57,65 @@ const SeatMapComponentAvail: React.FC<SeatMapComponentAvailProps> = ({ config, d
 
   const sabreCabinClass = mapToSabreClass(cabinClass);
 
+  const segment = normalizedSegments[segmentIndex]; // 👈 теперь она есть
+  console.log('📡 Segment before generateFlightData:', segment);
+
   return (
     <div style={{ padding: '1rem' }}>
-      {/* Селектор сегмента рейса */}
-      <label>Сегмент:</label>
-      <select value={segmentIndex} onChange={handleSegmentChange}>
-        {rawSegments.map((seg: any, idx: number) => (
-          <option key={idx} value={idx}>
-            {seg.origin} → {seg.destination}, рейс {seg.FlightNumber || seg.marketingFlightNumber}
-          </option>
-        ))}
-      </select>
+    {/* Селектор сегмента рейса */}
+    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+      <div>
+        <label>Сегмент:</label>
+        <select value={segmentIndex} onChange={handleSegmentChange}>
+          {rawSegments.map((seg: any, idx: number) => (
+            <option key={idx} value={idx}>
+              {seg.origin} → {seg.destination}, рейс {seg.FlightNumber || seg.marketingFlightNumber}
+            </option>
+          ))}
+        </select>
+      </div>
 
-      <br /><br />
-
-      {/* Селектор класса обслуживания */}
-      <label>Класс обслуживания:</label>
-      <select
-        value={cabinClass}
-        onChange={(e) => setCabinClass(e.target.value as CabinClassForLibrary)}
-      >
-        <option value="E">Economy</option>
-        <option value="P">Premium Economy</option>
-        <option value="B">Business</option>
-        <option value="F">First</option>
-      </select>
-
-      <br /><br />
-
-      {/* Визуализация карты мест */}
-      <SeatMapComponentBase
-        config={config}
-        flightSegments={[normalizedSegments[segmentIndex]]}
-        cabinClass={sabreCabinClass} // 👈 теперь обязательный проп
-        generateFlightData={(segment, index, cabin) =>
-          getFlightFromSabreData({ flightSegments: [{ ...segment, cabinClass: cabin }] }, 0)
-        }
-        availability={availability}
-        passengers={passengers}
-      />
+      {/* ✅ Equipment прямо из normalizedSegments */}
+      <div style={{ fontSize: '1.5rem', color: '#555' }}>
+        ✈️ <strong>Самолёт:</strong> {normalizedSegments?.[segmentIndex]?.equipment || 'неизвестно'}
+      </div>
     </div>
-  );
+
+    <br />
+
+    {/* Селектор класса обслуживания */}
+    <label>Класс обслуживания:</label>
+    <select
+      value={cabinClass}
+      onChange={(e) => setCabinClass(e.target.value as CabinClassForLibrary)}
+    >
+      <option value="E">Economy</option>
+      <option value="P">Premium Economy</option>
+      <option value="B">Business</option>
+      <option value="F">First</option>
+    </select>
+
+    <br /><br />
+
+    {/* Визуализация карты мест */}
+    <SeatMapComponentBase
+      config={config}
+      flightSegments={[normalizedSegments[segmentIndex]]}
+      cabinClass={sabreCabinClass}
+      generateFlightData={(segment, index, cabin) => {
+        const enrichedSegment = {
+          ...segment,
+          cabinClass: cabin,
+          equipment: segment.equipment
+        };
+        return getFlightFromSabreData({ flightSegments: [enrichedSegment] }, 0);
+      }}
+      availability={availability}
+      passengers={passengers}
+      showSegmentSelector={false}
+    />
+  </div>
+  )
 };
 
 export default SeatMapComponentAvail;

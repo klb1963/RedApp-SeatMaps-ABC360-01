@@ -50,6 +50,11 @@ export const getFlightFromSabreData = (
 
   const cabinClass = segment?.cabinClass || 'E';
 
+  const equipment =
+  segment?.Equipment?.EncodeDecodeElement?.SimplyDecoded ||
+  segment?.equipment ||
+  '';
+
   const result = {
     id: '111',
     airlineCode,
@@ -58,7 +63,8 @@ export const getFlightFromSabreData = (
     departure: origin,
     arrival: destination,
     cabinClass: cabinClass === 'A' ? undefined : cabinClass,
-    passengerType: 'ADT'
+    passengerType: 'ADT',
+    equipment
   };
 
   console.log('✅ [getFlightFromSabreData] Итоговый объект flight:', result);

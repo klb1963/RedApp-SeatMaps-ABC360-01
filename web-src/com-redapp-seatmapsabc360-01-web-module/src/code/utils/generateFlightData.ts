@@ -15,7 +15,13 @@ export interface FlightSegmentInput {
   destination?: string;
   arrival?: string;
   cabinClass?: string;
-  equipment?: string;
+  equipment?: string | {
+    EncodeDecodeElement?: {
+      Code?: string;
+      FullyDecoded?: string;
+      SimplyDecoded?: string;
+    };
+  };
 }
 
 export interface FlightData {
@@ -31,18 +37,19 @@ export interface FlightData {
 }
 
 export function generateFlightData(segment: FlightSegmentInput, index: number): FlightData {
-  console.log(`🛰️ [generateFlightData] Вызов для сегмента #${index}:`, segment);
-  console.count('🎯 generateFlightData called');
-
   const airlineCode = segment.marketingAirline || segment.marketingCarrier || 'XX';
   const flightNo = segment.flightNumber || segment.marketingFlightNumber || '000';
   const rawDate = segment.departureDateTime || segment.departureDate || '';
   const departureDate = rawDate.includes('T') ? rawDate.split('T')[0] : rawDate;
-
   const departure = segment.origin || segment.departure || '???';
   const arrival = segment.destination || segment.arrival || '???';
 
-  const result: FlightData = {
+  const rawEquipment =
+    typeof segment.equipment === 'object'
+      ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded || ''
+      : segment.equipment || '';
+
+  return {
     id: String(index).padStart(3, '0'),
     airlineCode,
     flightNo,
@@ -50,11 +57,7 @@ export function generateFlightData(segment: FlightSegmentInput, index: number): 
     departure,
     arrival,
     cabinClass: mapCabinToCode(segment.cabinClass || 'Y'),
-    equipment: segment.equipment || '',
+    equipment: rawEquipment,
     marketingCarrier: airlineCode
   };
-
-  console.log('📦 [generateFlightData] Сформирован объект FlightData:', result);
-
-  return result;
 }
