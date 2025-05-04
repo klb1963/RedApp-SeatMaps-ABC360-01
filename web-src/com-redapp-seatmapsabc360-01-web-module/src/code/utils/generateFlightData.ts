@@ -36,7 +36,7 @@ export interface FlightData {
   marketingCarrier?: string;
 }
 
-export function generateFlightData(segment: FlightSegmentInput, index: number): FlightData {
+export function generateFlightData(segment: FlightSegmentInput, index: number, cabinClassOverride?: string): FlightData {
   const airlineCode = segment.marketingAirline || segment.marketingCarrier || 'XX';
   const flightNo = segment.flightNumber || segment.marketingFlightNumber || '000';
   const rawDate = segment.departureDateTime || segment.departureDate || '';
@@ -49,6 +49,8 @@ export function generateFlightData(segment: FlightSegmentInput, index: number): 
       ? segment.equipment?.EncodeDecodeElement?.SimplyDecoded || ''
       : segment.equipment || '';
 
+  const cabinClass = cabinClassOverride || segment.cabinClass || 'Y';
+
   return {
     id: String(index).padStart(3, '0'),
     airlineCode,
@@ -56,7 +58,7 @@ export function generateFlightData(segment: FlightSegmentInput, index: number): 
     departureDate,
     departure,
     arrival,
-    cabinClass: mapCabinToCode(segment.cabinClass || 'Y'),
+    cabinClass: mapCabinToCode(cabinClass),
     equipment: rawEquipment,
     marketingCarrier: airlineCode
   };

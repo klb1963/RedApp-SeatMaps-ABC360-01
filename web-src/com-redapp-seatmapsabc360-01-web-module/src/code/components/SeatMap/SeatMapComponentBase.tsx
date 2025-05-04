@@ -9,7 +9,7 @@ interface SeatMapComponentBaseProps {
   flightSegments: any[];
   initialSegmentIndex?: number;
   generateFlightData: (segment: any, segmentIndex: number, cabinClass?: string) => any;
-  cabinClass: 'F' | 'C' | 'S' | 'Y' | 'A'; // 👈 обязательно передаётся извне
+  cabinClass: 'F' | 'C' | 'S' | 'Y' | 'A' | 'P' | 'B';
   layoutData?: any;
   availability?: any[];
   passengers?: any[];

@@ -76,11 +76,11 @@ export class SeatMapShoppingTile extends Tile<FlightSegment> implements WithoutF
             console.log("setDataContent_after");
 
             // Обработчик клика
-            // this.$el.off('click', '.abc-seatmap-button');
-            // this.$el.on('click', '.abc-seatmap-button', () => {
-            //     console.log('🔁 Клик по кнопке — повторно инициируем View');
-            //     this.trigger('selfDrawerContextModelPropagated', this.model); // ✅ нативно
-            // });
+            this.$el.off('click', '.abc-seatmap-button');
+            this.$el.on('click', '.abc-seatmap-button', () => {
+                console.log('🔁 Клик по кнопке — повторно инициируем View');
+                this.trigger('selfDrawerContextModelPropagated', this.model); // ✅ нативно
+            });
 
         } catch (error) {
             console.error('❌ Ошибка в selfDrawerContextModelPropagated:', error);

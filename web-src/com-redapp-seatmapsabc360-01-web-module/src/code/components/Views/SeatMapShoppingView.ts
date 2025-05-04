@@ -5,7 +5,7 @@ import * as ReactDOM from 'react-dom';
 import { AbstractView } from 'sabre-ngv-app/app/AbstractView';
 import { AbstractModel } from 'sabre-ngv-app/app/AbstractModel';
 import { FlightSegment } from 'sabre-ngv-app/app/common/data/flight/FlightSegment';
-import SeatMapComponentShopping from '../SeatMap/SeatMapComponentShopping';
+import SeatMapComponentShopping from '../../components/SeatMap/SeatMapComponentShopping';
 import { quicketConfig } from '../../utils/quicketConfig';
 import { CssClass } from 'sabre-ngv-core/decorators/classes/view/CssClass';
 import { Template } from 'sabre-ngv-core/decorators/classes/view/Template';
@@ -55,9 +55,10 @@ export class SeatMapShoppingView extends AbstractView<AbstractModel> {
                 departureDateTime: departureDateTime ? departureDateTime.toISOString().split('T')[0] : 'UNKNOWN',
                 marketingAirline: s.getMarketingAirline(),
                 cabinClass: 'A',
-                aircraft: {
-                    code: equipmentCode,
-                    description: equipmentDescription
+                equipment: {
+                    EncodeDecodeElement: {
+                        SimplyDecoded: equipmentDescription
+                    }
                 }
             };
         });
