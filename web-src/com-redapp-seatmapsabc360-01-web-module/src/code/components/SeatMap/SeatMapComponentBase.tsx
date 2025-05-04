@@ -4,6 +4,9 @@ import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { mapCabinToCode } from '../../utils/mapCabinToCode';
 
+import { getService} from '../../Context';
+import { PublicModalsService } from 'sabre-ngv-modals/services/PublicModalService';
+
 interface SeatMapComponentBaseProps {
   config: any;
   flightSegments: any[];
@@ -23,7 +26,6 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
   initialSegmentIndex = 0,
   generateFlightData,
   cabinClass,
-  layoutData,
   availability = [],
   passengers = [],
   showSegmentSelector = true,
@@ -37,36 +39,31 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 
   // 🔄 Генерация flight при изменении сегмента или класса обслуживания
   useEffect(() => {
-    if (
-      !flightSegments.length ||
-      !currentSegment ||
-      !currentSegment.marketingAirline ||
-      !currentSegment.flightNumber
-    ) {
-      console.warn('⛔ Невозможно сгенерировать flight: сегмент некорректен.', currentSegment);
+    if (!flightSegments.length || !currentSegment) {
+      console.warn('⛔ Нет сегментов или текущий сегмент не определён');
       setFlight(null);
       return;
     }
-
+  
+    // Используем функцию генерации полёта
     const generatedFlight = generateFlightData(currentSegment, segmentIndex, cabinClass);
-
-    if (!generatedFlight) {
-      console.warn('⚠️ generateFlightData вернул null или undefined');
+  
+    if (!generatedFlight || generatedFlight.flightNo === '000' || generatedFlight.airlineCode === 'XX') {
+      console.warn('⛔ generateFlightData: flight некорректен.', generatedFlight);
       setFlight(null);
       return;
     }
-
+  
     console.log('🔧 [generateFlightData] результат:', generatedFlight);
-
-    // 🪑 Преобразуем cabinClass для библиотеки визуализации
+  
     const cabinClassForLib = mapCabinToCode(cabinClass);
-
+  
     const flightForIframe = {
       ...generatedFlight,
       cabinClass: cabinClassForLib,
       passengerType: 'ADT',
     };
-
+  
     console.log('✅ Сформирован flight:', flightForIframe);
     setFlight(flightForIframe);
   }, [flightSegments, segmentIndex, cabinClass]);
@@ -86,6 +83,8 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
       config: JSON.stringify(config),
       flight: JSON.stringify(flight),
       currentDeckIndex: '0',
+      availability: JSON.stringify(availability),
+      passengers: JSON.stringify(passengers) // ✅ добавлено
     };
 
     console.log('%c📤 [SeatMaps] Итоговое сообщение в библиотеку:', 'color: green; font-weight: bold;');
@@ -106,7 +105,9 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
         type: 'seatMaps',
         config: JSON.stringify(config),
         flight: JSON.stringify(flight),
-        currentDeckIndex: '0'
+        currentDeckIndex: '0',
+        availability: JSON.stringify(availability),
+        passengers: JSON.stringify(passengers) // ✅ добавлено
       };
 
       console.log('%c🚀 [SeatMaps] Повторная инициализация через timeout', 'color: orange; font-weight: bold;');
@@ -115,6 +116,48 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 
     return () => clearTimeout(timeout);
   }, [flight]);
+
+  // 👂👂👂 Слушатель сообщений из библиотеки (seatSelected)
+  const appMessageListener = (event: MessageEvent) => {
+    const { type, ...rest } = event.data;
+    console.log('Recieved!!!:', event.data);
+
+    if (type === 'seatMaps' && rest.onSeatSelected) {
+      const { passengerId, seatLabel, value, currency, label, flightNumber, airlineCode, origin, destination, departureDate } = rest.onSeatSelected;
+    
+      console.log('✅ Выбрано место:', seatLabel, 'для пассажира:', passengerId);
+    
+      const publicModalsService = getService(PublicModalsService);
+
+      const UpdatePNRComponent = require('../../PNR/UpdatePNR').UpdatePNR;
+    
+      publicModalsService.showReactModal({
+        header: 'Назначение места',
+        component: React.createElement(UpdatePNRComponent, {
+          passengerRef: passengerId,
+          seatNumber: seatLabel,
+          amount: value,
+          currency,
+          passengerName: label,
+          flightNumber,
+          airlineCode,
+          origin,
+          destination,
+          departureDate
+        }),
+        modalClassName: 'seatmap-modal-class'
+      });
+    }
+  };
+
+  window.addEventListener('message', appMessageListener);
+
+  // useEffect(() => {
+  //   window.addEventListener('message', appMessageListener);
+  //   return () => {
+  //     window.removeEventListener('message', appMessageListener);
+  //   };
+  // }, []);
 
   return (
     <div style={{ padding: '1rem' }}>
@@ -134,23 +177,7 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
           </select>
         </div>
       )}
-
-      {/* 🔍 Отладочная информация */}
-      <div style={{ marginBottom: '1rem', fontSize: '0.85rem', color: '#555', background: '#f9f9f9', padding: '0.5rem', border: '1px solid #ccc' }}>
-        <strong>Debug info:</strong>
-        <div>segmentIndex: {segmentIndex}</div>
-        <div>cabinClass: {cabinClass}</div>
-        <div>flightNo: {flight?.flightNo}</div>
-        <div>airlineCode: {flight?.airlineCode}</div>
-        <div>equipment: {flight?.equipment}</div>
-      </div>
-
-      {/* ✈️ Полный JSON flight-объекта */}
-      <div style={{ marginBottom: '1rem', fontSize: '0.9rem', color: '#333' }}>
-        <strong>🛫 Flight info:</strong>
-        <pre>{JSON.stringify(flight, null, 2)}</pre>
-      </div>
-
+     
       {/* 👉 iframe с картой салона */}
       <iframe
         ref={iframeRef}
@@ -165,3 +192,5 @@ const SeatMapComponentBase: React.FC<SeatMapComponentBaseProps> = ({
 };
 
 export default SeatMapComponentBase;
+
+

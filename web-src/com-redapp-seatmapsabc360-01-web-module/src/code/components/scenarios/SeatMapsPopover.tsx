@@ -1,7 +1,5 @@
 // file: SeatMapsPopover.tsx
 
-// file: SeatMapsPopover.tsx
-
 import * as React from 'react';
 import { generateFlightData, FlightSegmentInput } from '../../utils/generateFlightData';
 import { mapCabinToCode } from '../../utils/mapCabinToCode';

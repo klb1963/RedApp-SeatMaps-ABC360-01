@@ -2,7 +2,6 @@
 
 import { mapCabinToCode } from '../utils/mapCabinToCode';
 
-// Тип входных данных для сегмента рейса
 export interface FlightSegmentInput {
   marketingAirline?: string;
   marketingCarrier?: string;
@@ -37,8 +36,12 @@ export interface FlightData {
 }
 
 export function generateFlightData(segment: FlightSegmentInput, index: number, cabinClassOverride?: string): FlightData {
+
+  console.log('[📥 Incoming segment]', segment);
+
   const airlineCode = segment.marketingAirline || segment.marketingCarrier || 'XX';
-  const flightNo = segment.flightNumber || segment.marketingFlightNumber || '000';
+  const flightNoRaw = segment.flightNumber || segment.marketingFlightNumber || '000';
+  const flightNo = flightNoRaw.replace(/^0+/, '') || '000'; // удаляем лидирующие нули
   const rawDate = segment.departureDateTime || segment.departureDate || '';
   const departureDate = rawDate.includes('T') ? rawDate.split('T')[0] : rawDate;
   const departure = segment.origin || segment.departure || '???';
@@ -50,16 +53,21 @@ export function generateFlightData(segment: FlightSegmentInput, index: number, c
       : segment.equipment || '';
 
   const cabinClass = cabinClassOverride || segment.cabinClass || 'Y';
+  const mappedCabin = mapCabinToCode(cabinClass);
 
-  return {
+  const result: FlightData = {
     id: String(index).padStart(3, '0'),
     airlineCode,
     flightNo,
     departureDate,
     departure,
     arrival,
-    cabinClass: mapCabinToCode(cabinClass),
+    cabinClass: mappedCabin,
     equipment: rawEquipment,
     marketingCarrier: airlineCode
   };
+
+  console.log('[✅ FlightData Ready]', result);
+  
+  return result;
 }

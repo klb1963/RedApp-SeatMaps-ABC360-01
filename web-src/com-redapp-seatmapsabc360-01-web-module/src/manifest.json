@@ -25,5 +25,12 @@
       "service": "CustomWorkflowService",
       "cssClasses": "redapp-web-customworkflow-manifestjson"
     }
-  ]
+  ],
+"submodules": [
+  "meta/src/code/components/PnrServices/UpdatePNR",
+  "meta/src/code/components/PnrServices/ShowPnrInfo",
+  "meta/src/code/components/PnrServices/CreatePNR",
+  "meta/src/code/components/SeatMap/SeatMapComponentBase",
+  "meta/src/code/components/SeatMap/SeatMapComponentPnr"
+]
 }
